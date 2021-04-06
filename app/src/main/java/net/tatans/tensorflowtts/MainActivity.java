@@ -22,13 +22,13 @@ public class MainActivity extends AppCompatActivity {
     private View speakBtn;
     private RadioGroup speedGroup;
 
-    @Override
+    @Override //重写是子类对父类的允许访问的方法的实现过程进行重新编写, 返回值和形参都不能改变。即外壳不变，核心重写！
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         TtsManager.getInstance().init(this);
-
+//        System.out.println("请输入要插入的数据：");
         TtsStateDispatcher.getInstance().addListener(new OnTtsStateListener() {
             @Override
             public void onTtsReady() {

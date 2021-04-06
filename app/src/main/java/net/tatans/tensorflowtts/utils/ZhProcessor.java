@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.tatans.tensorflowtts.utils.Zhuan;
+
 
 /**
  * Create by zhp on 2021/2/5
@@ -37,7 +39,7 @@ public class ZhProcessor {
     private static final int TYPE_UNKONWN = -1;
     private static final int TYPE_ZH = 0;
     private static final int TYPE_NUMBER = 1;
-
+    // 匹配数字的正则表达式
     private static final Pattern COMMA_NUMBER_RE = Pattern.compile("([0-9][0-9\\,]+[0-9])");
     private static final Pattern DECIMAL_RE = Pattern.compile("([0-9]+\\.[0-9]+)");
     private static final Pattern POUNDS_RE = Pattern.compile("£([0-9\\,]*[0-9]+)");
@@ -115,13 +117,15 @@ public class ZhProcessor {
 
 
     private String parseText(String text) {
-        text = removeCommasFromNumbers(text);
-        text = expandPounds(text);
-        text = expandRmb(text);
-        text = expandDollars(text);
-        text = expandDecimals(text);
-        text = expandDate(text);
-        text = expandCardinals(text);
+//        text = removeCommasFromNumbers(text);
+//        text = expandPounds(text);
+//        text = expandRmb(text);
+//        text = expandDollars(text);
+//        text = expandDecimals(text);
+//        text = expandDate(text);
+//        text = expandCardinals(text);
+        text = Zhuan.zuzhuang(text);
+
         StringBuilder pinyinBuilder = new StringBuilder();
         char[] chars = text.toCharArray();
         String hanzi = "";
@@ -167,16 +171,16 @@ public class ZhProcessor {
 
         return pinyinBuilder.toString();
     }
-
+    // 从数字中去除逗号
     private String removeCommasFromNumbers(String text) {
         Matcher m = COMMA_NUMBER_RE.matcher(text);
         while (m.find()) {
-            String s = m.group().replaceAll(",", "");
+            String s = m.group().replaceAll(",", "");// 将,替换成空
             text = text.replaceFirst(m.group(), s);
         }
         return text;
     }
-
+    // 添加欧元后缀
     private String expandPounds(String text) {
         Matcher m = POUNDS_RE.matcher(text);
         while (m.find()) {
@@ -184,7 +188,7 @@ public class ZhProcessor {
         }
         return text;
     }
-
+    // 添加 元 后缀
     private String expandRmb(String text) {
         Matcher m = RMB_RE.matcher(text);
         while (m.find()) {
@@ -192,7 +196,7 @@ public class ZhProcessor {
         }
         return text;
     }
-
+    //添加美元 后缀
     private String expandDollars(String text) {
         Matcher m = DOLLARS_RE.matcher(text);
         while (m.find()) {
@@ -217,7 +221,7 @@ public class ZhProcessor {
         }
         return text;
     }
-
+    //处理小数点
     private String expandDecimals(String text) {
         Matcher m = DECIMAL_RE.matcher(text);
         while (m.find()) {
@@ -227,7 +231,7 @@ public class ZhProcessor {
         }
         return text;
     }
-
+    // 处理数字
     private String expandDate(String text) {
         Matcher m = DATE_RE.matcher(text);
         while (m.find()) {
@@ -236,10 +240,11 @@ public class ZhProcessor {
         }
         return text;
     }
-
+    // 扩展 基数
     private String expandCardinals(String text) {
         Matcher m = NUMBER_RE.matcher(text);
         while (m.find()) {
+            // 解析 https://blog.csdn.net/u010502101/article/details/79162587
             int l = Integer.valueOf(m.group());
             String spelling = NumberToCH.numberToCH(l);
             text = text.replaceFirst(m.group(), spelling);
