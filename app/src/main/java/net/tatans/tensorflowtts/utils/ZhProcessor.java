@@ -66,6 +66,7 @@ public class ZhProcessor {
         try {
             InputStream inputStream =
                     context.getAssets().open("baker_mapper.json");
+
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int len = 0;
@@ -115,9 +116,9 @@ public class ZhProcessor {
         return symbol2ids(symbols.split(" "));
     }
 
-
-    private String parseText(String text) {
-//        text = removeCommasFromNumbers(text);
+    // private
+    public String parseText(String text) {
+        text = removeCommasFromNumbers(text);
 //        text = expandPounds(text);
 //        text = expandRmb(text);
 //        text = expandDollars(text);
@@ -171,8 +172,8 @@ public class ZhProcessor {
 
         return pinyinBuilder.toString();
     }
-    // 从数字中去除逗号
-    private String removeCommasFromNumbers(String text) {
+    // 从数字中去除逗号 private
+    public String removeCommasFromNumbers(String text) {
         Matcher m = COMMA_NUMBER_RE.matcher(text);
         while (m.find()) {
             String s = m.group().replaceAll(",", "");// 将,替换成空
@@ -341,4 +342,7 @@ public class ZhProcessor {
         return builder.toString();
     }
 
+//    public static void main(String[] args) {
+//        System.out.println("text去除标点符号结果:");
+//    }
 }

@@ -2,6 +2,7 @@ package net.tatans.tensorflowtts;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -12,6 +13,7 @@ import net.tatans.tensorflowtts.dispatcher.OnTtsStateListener;
 import net.tatans.tensorflowtts.dispatcher.TtsStateDispatcher;
 import net.tatans.tensorflowtts.tts.TtsManager;
 import net.tatans.tensorflowtts.utils.ThreadPoolManager;
+import net.tatans.tensorflowtts.utils.ZhProcessor;
 
 /**
  * @author {@link "mailto:xuefeng.ding@outlook.com" "Xuefeng Ding"}
@@ -43,6 +45,12 @@ public class MainActivity extends AppCompatActivity {
             public void onTtsStop() {
             }
         });
+
+        ZhProcessor zhProcessor = new ZhProcessor(MainActivity.this);
+        String text = "这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和C++。";
+        text = zhProcessor.removeCommasFromNumbers(text);
+        System.out.println("text去除标点符号结果:"+text);
+        Log.d("ccs",text); // 选择打印的内容
 
         EditText input = findViewById(R.id.input);
         input.setHint(DEFAULT_INPUT_TEXT);

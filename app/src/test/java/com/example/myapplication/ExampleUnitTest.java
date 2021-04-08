@@ -16,9 +16,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import static org.junit.Assert.*;
 import net.tatans.tensorflowtts.utils.Zhuan;
+import net.tatans.tensorflowtts.utils.ZhProcessor;
+import com.huaban.analysis.jieba.JiebaSegmenter;
+import android.content.Context;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+//private static final Pattern COMMA_NUMBER_RE = Pattern.compile("([0-9][0-9\\,]+[0-9])");
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -29,11 +38,43 @@ import net.tatans.tensorflowtts.utils.Zhuan;
 @RunWith(JUnit4.class)
 public class ExampleUnitTest {
 
+    // 从数字中去除逗号 private
+    public String removeCommasFromNumbers(String text) {
+        Matcher m = Pattern.compile("([0-9][0-9\\,]+[0-9])").matcher(text);
+        while (m.find()) {
+            String s = m.group().replaceAll(",", "");// 将,替换成空
+            text = text.replaceFirst(m.group(), s);
+            String s1 = m.group().replaceAll("，", "");// 将,替换成空
+            text = text.replaceFirst(m.group(), s1);
+            String s2 = m.group().replaceAll("。", "");// 将,替换成空
+            text = text.replaceFirst(m.group(), s2);
+        }
+        return text;
+    }
+
     @Test
     public void aaa() {
-        String s1 = "优碧胜1+ 5= 7 2020-04-05 123456 java Hello  imooc 测试";
-        String text = Zhuan.zuzhuang(s1);
-        System.out.println("text结果:"+text);
+        JiebaSegmenter segmenter = new JiebaSegmenter();
+//        String s1 = "优碧胜1+ 5= 7 2020-04-05 123456 java Hello  imooc 测试";
+        String text = "这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和C++。";
+//        ZhProcessor zp = new ZhProcessor(this);
+        text = removeCommasFromNumbers(text);
+        System.out.println("text去除标点符号结果:"+text);
+//        String text_1 = segmenter.process(s1, JiebaSegmenter.SegMode.INDEX).toString();
+//        System.out.println("分词结果:"+text_1);
+//        text = Zhuan.zuzhuang(text);
+//        System.out.println("text正则化结果:"+text);
+    }
+
+    @Test
+    public void testDemo() {
+        JiebaSegmenter segmenter = new JiebaSegmenter();
+        String[] sentences =
+                new String[] {"这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和C++。", "我不喜欢日本和服。", "雷猴回归人间。",
+                        "工信处女干事每月经过下属科室都要亲口交代24口交换机等技术性器件的安装工作", "结果婚的和尚未结过婚的"};
+        for (String sentence : sentences) {
+            System.out.println(segmenter.process(sentence, JiebaSegmenter.SegMode.INDEX).toString());
+        }
     }
 
 //    @Test
