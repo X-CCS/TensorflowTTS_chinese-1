@@ -17,15 +17,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
+
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 import net.tatans.tensorflowtts.utils.Zhuan;
 import net.tatans.tensorflowtts.utils.ZhProcessor;
 import com.huaban.analysis.jieba.JiebaSegmenter;
+import com.huaban.analysis.jieba.SegToken;
+import com.huaban.analysis.jieba.WordDictionary;
 import android.content.Context;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.File;
+import java.io.*;
+import java.util.*;
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
+import net.sourceforge.pinyin4j.multipinyin.MultiPinyinConfig;
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
+import net.sourceforge.pinyin4j.multipinyin.MultiPinyinConfig;
 
 //private static final Pattern COMMA_NUMBER_RE = Pattern.compile("([0-9][0-9\\,]+[0-9])");
 
@@ -42,28 +63,64 @@ public class ExampleUnitTest {
     public String removeCommasFromNumbers(String text) {
         Matcher m = Pattern.compile("([0-9][0-9\\,]+[0-9])").matcher(text);
         while (m.find()) {
-            String s = m.group().replaceAll(",", "");// 将,替换成空
-            text = text.replaceFirst(m.group(), s);
-            String s1 = m.group().replaceAll("，", "");// 将,替换成空
-            text = text.replaceFirst(m.group(), s1);
-            String s2 = m.group().replaceAll("。", "");// 将,替换成空
-            text = text.replaceFirst(m.group(), s2);
+//            String s = m.group().replaceAll(",", "");// 将,替换成空
+//            text = text.replaceFirst(m.group(), s);
+//            String s1 = m.group().replaceAll("，", "");// 将,替换成空
+//            text = text.replaceFirst(m.group(), s1);
+//            String s2 = m.group().replaceAll("。", "");// 将,替换成空
+
+            String str = m.group().replaceAll( "[\\pP+~$`^=|<>～｀＄＾＋＝｜＜＞￥×。，]" , "");
+            text = text.replaceFirst(m.group(), str);
         }
         return text;
     }
 
+    //输出变量类型的类，
+    public static String getType(Object test) {
+        return test.getClass().getName().toString();
+
+    }
     @Test
-    public void aaa() {
+    public void aaa() throws BadHanyuPinyinOutputFormatCombination {
         JiebaSegmenter segmenter = new JiebaSegmenter();
-//        String s1 = "优碧胜1+ 5= 7 2020-04-05 123456 java Hello  imooc 测试";
-        String text = "这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和C++。";
-//        ZhProcessor zp = new ZhProcessor(this);
-        text = removeCommasFromNumbers(text);
-        System.out.println("text去除标点符号结果:"+text);
-//        String text_1 = segmenter.process(s1, JiebaSegmenter.SegMode.INDEX).toString();
-//        System.out.println("分词结果:"+text_1);
-//        text = Zhuan.zuzhuang(text);
-//        System.out.println("text正则化结果:"+text);
+        String text = "优碧胜 1+5=7 2020-04-05 123456 java Hello  imooc 测试";
+//        String text = "这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和Cpp。";
+
+        // 1、去除string 中的标点符号 []中添加需要处理的标点符号
+        text = text.replaceAll( "[\\~$`^|<>～｀＄＾｜＜＞￥×。，,]" , "");
+        System.out.println("text去除标点符号之后的结果:"+text);
+
+        // 2、文本正则化
+        text = Zhuan.zuzhuang(text);
+        System.out.println("text文本正则化之后的结果:"+text);
+
+        // 3、分词
+//        String text_test = "塑料管件我爱Python和C++" ;
+//        System.out.println( "Jeba 分词  -------------" );
+        // 词典路径为Resource/jieba_user.dict
+        Path path = Paths.get(new File( getClass().getClassLoader().getResource("jieba_user.dict").getPath() ).getAbsolutePath() ) ;
+        WordDictionary.getInstance().loadUserDict( path ) ;
+        // 对分词后的结果进行解析
+        List<SegToken> res= segmenter.process(text , JiebaSegmenter.SegMode.SEARCH);
+
+
+        String str1="";
+        for (int i=0;i<res.size();i++){
+            SegToken token = res.get(i);
+            str1 += token.word+" ";
+        }
+        System.out.println("text分词之后的结果:"+str1);
+//        System.out.println("text分词之后的结果的类型:"+getType(str1));
+       // 4、多音字处理
+        // 自定义用户拼音词典 如 吸血鬼日记 (xi1,xue4,gui3,ri4,ji4)
+        MultiPinyinConfig.multiPinyinPath="/Users/ccs/Desktop/BGY_projects/TensorflowTTS_chinese-1/app/src/main/resources/pinyindb/my_multi_pinyin.txt";
+        HanyuPinyinOutputFormat outputFormat = new HanyuPinyinOutputFormat();
+        outputFormat.setToneType(HanyuPinyinToneType.WITH_TONE_NUMBER);
+        outputFormat.setVCharType(HanyuPinyinVCharType.WITH_V);
+//        "吸血鬼日记鬼日记..."
+        text = PinyinHelper.toHanYuPinyinString(str1, outputFormat, " ", true);
+//        System.out.println(PinyinHelper.toHanYuPinyinString(str1, outputFormat, ";", true));
+        System.out.println("text转拼音之后的结果:"+text);
     }
 
     @Test

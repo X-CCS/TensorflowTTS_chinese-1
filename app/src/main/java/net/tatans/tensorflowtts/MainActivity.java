@@ -15,6 +15,8 @@ import net.tatans.tensorflowtts.tts.TtsManager;
 import net.tatans.tensorflowtts.utils.ThreadPoolManager;
 import net.tatans.tensorflowtts.utils.ZhProcessor;
 
+import com.huaban.analysis.jieba.WordDictionary;
+
 /**
  * @author {@link "mailto:xuefeng.ding@outlook.com" "Xuefeng Ding"}
  * Created 2020-07-20 17:25
@@ -45,12 +47,13 @@ public class MainActivity extends AppCompatActivity {
             public void onTtsStop() {
             }
         });
-
+        // MainActivity.this 是上下文
         ZhProcessor zhProcessor = new ZhProcessor(MainActivity.this);
         String text = "这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和C++。";
         text = zhProcessor.removeCommasFromNumbers(text);
         System.out.println("text去除标点符号结果:"+text);
         Log.d("ccs",text); // 选择打印的内容
+
 
         EditText input = findViewById(R.id.input);
         input.setHint(DEFAULT_INPUT_TEXT);
