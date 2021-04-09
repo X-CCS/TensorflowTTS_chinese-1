@@ -3,6 +3,10 @@ package net.tatans.tensorflowtts.utils;
 import android.content.Context;
 import android.util.Log;
 
+import com.huaban.analysis.jieba.JiebaSegmenter;
+import com.huaban.analysis.jieba.SegToken;
+import com.huaban.analysis.jieba.WordDictionary;
+
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
@@ -13,14 +17,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.tatans.tensorflowtts.utils.Zhuan;
 
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+import net.sourceforge.pinyin4j.multipinyin.MultiPinyinConfig;
+import net.tatans.tensorflowtts.utils.Zhuan;
 
 /**
  * Create by zhp on 2021/2/5
@@ -47,6 +57,7 @@ public class ZhProcessor {
     private static final Pattern RMB_RE = Pattern.compile("￥([0-9.\\,]*[0-9]+)");
     private static final Pattern NUMBER_RE = Pattern.compile("[0-9]+");
     private static final Pattern DATE_RE = Pattern.compile("([0-9]{2,4}-[0-9]{2}-[0-9]{2} )?([0-9]{2}:[0-9]{2}:[0-9]{2})?");
+    JiebaSegmenter segmenter = new JiebaSegmenter(); //初始化一次，会比较久
 
     static {
         NUMBER_2_HAN_ZI.put("0", "零");
@@ -62,7 +73,8 @@ public class ZhProcessor {
         NUMBER_2_HAN_ZI.put(".", "点");
     }
 
-    public ZhProcessor(Context context) {
+    public ZhProcessor(Context context){
+//        segmenter = new JiebaSegmenter();
         try {
             InputStream inputStream =
                     context.getAssets().open("baker_mapper.json");
@@ -102,7 +114,16 @@ public class ZhProcessor {
     }
 
     public int[] text2ids(String text) {
-        String parseText = parseText(text);
+//        String parseText = parseText(text);
+        // 有 throw的得抛出异常跟捕获异常才可以
+        String parseText;
+        try {
+            parseText = parseText(text);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
         String[] pinyin;
         try {
             pinyin = convert2Pinyin(parseText);
@@ -116,16 +137,66 @@ public class ZhProcessor {
         return symbol2ids(symbols.split(" "));
     }
 
+    //输出变量类型的类，
+    public static String getType(Object test) {
+        return test.getClass().getName().toString();
+
+    }
+
     // private
-    public String parseText(String text) {
-        text = removeCommasFromNumbers(text);
+//    JiebaSegmenter segmenter = new JiebaSegmenter();
+    public String parseText(String text) throws Exception {
+//        text = removeCommasFromNumbers(text);
 //        text = expandPounds(text);
 //        text = expandRmb(text);
 //        text = expandDollars(text);
 //        text = expandDecimals(text);
 //        text = expandDate(text);
 //        text = expandCardinals(text);
+//        text = Zhuan.zuzhuang(text);
+///////////////////我的文本正则化//////////////////////////////////
+//        JiebaSegmenter segmenter = new JiebaSegmenter();
+        // 1、去除string 中的标点符号 []中添加需要处理的标点符号
+        text = text.replaceAll( "[。，,]" , "");
+//        text = removeCommasFromNumbers(text);
+//        System.out.println("text去除标点符号之后的结果:"+text);
+
+        // 2、文本正则化
         text = Zhuan.zuzhuang(text);
+//        System.out.println("text文本正则化之后的结果:"+text);
+
+        // 3、分词
+//        String text_test = "塑料管件我爱Python和C++" ;
+//        System.out.println( "Jeba 分词  -------------" );
+        // 词典路径为Resource/jieba_user.dict
+
+//        Path path = Paths.get(new File( getClass().getClassLoader().getResource("jieba_user.dict").getPath() ).getAbsolutePath() ) ;
+
+//        WordDictionary.getInstance().loadUserDict( path ) ;
+        // 对分词后的结果进行解析
+        List<SegToken> res= segmenter.process(text , JiebaSegmenter.SegMode.SEARCH);
+
+
+        String str1="";
+        for (int i=0;i<res.size();i++){
+            SegToken token = res.get(i);
+            str1 += token.word+" ";
+        }
+//        System.out.println("text分词之后的结果:"+str1);
+//        System.out.println("text分词之后的结果的类型:"+getType(str1));
+        text = str1;
+//        // 4、多音字处理（这里先不加）
+//        // 自定义用户拼音词典 如 吸血鬼日记 (xi1,xue4,gui3,ri4,ji4)
+//        MultiPinyinConfig.multiPinyinPath="/Users/ccs/Desktop/BGY_projects/TensorflowTTS_chinese-1/app/src/main/resources/pinyindb/my_multi_pinyin.txt";
+//        HanyuPinyinOutputFormat outputFormat = new HanyuPinyinOutputFormat();
+//        outputFormat.setToneType(HanyuPinyinToneType.WITH_TONE_NUMBER);
+//        outputFormat.setVCharType(HanyuPinyinVCharType.WITH_V);
+////        "吸血鬼日记鬼日记..."
+//        text = PinyinHelper.toHanYuPinyinString(str1, outputFormat, "", true);
+////        System.out.println(PinyinHelper.toHanYuPinyinString(str1, outputFormat, ";", true));
+//        System.out.println("text转拼音之后的结果:"+text);
+
+///////////////////我的文本正则化//////////////////////////////////
 
         StringBuilder pinyinBuilder = new StringBuilder();
         char[] chars = text.toCharArray();
@@ -182,7 +253,8 @@ public class ZhProcessor {
         return text;
     }
     // 添加欧元后缀
-    private String expandPounds(String text) {
+    //private
+    public String expandPounds(String text) {
         Matcher m = POUNDS_RE.matcher(text);
         while (m.find()) {
             text = text.replaceFirst(m.group(), m.group() + "欧元");
@@ -218,7 +290,8 @@ public class ZhProcessor {
             if (!"0".equals(cents) && !"00".equals(cents)) {
                 spelling += parts[1] + "美分";
             }
-            text = text.replaceFirst("\\" + m.group(), spelling);
+            // \(转意）\ （原来的\） 类似 \a
+            text = text.replaceFirst("\\\\" + m.group(), spelling);
         }
         return text;
     }

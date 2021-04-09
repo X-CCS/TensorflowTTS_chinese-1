@@ -83,3 +83,10 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+*.DS_Store
+app/.DS_Store
+.DS_Store
+app/src/.DS_Store
+app/src/main/.DS_Store
+app/src/main/resources/.DS_Store
+app/src/main/resources/pinyindb/.my_multi_pinyin.txt.swp

@@ -48,6 +48,8 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
 import net.sourceforge.pinyin4j.multipinyin.MultiPinyinConfig;
 
+import java.nio.file.Paths;
+
 //private static final Pattern COMMA_NUMBER_RE = Pattern.compile("([0-9][0-9\\,]+[0-9])");
 
 /**
@@ -83,9 +85,9 @@ public class ExampleUnitTest {
     @Test
     public void aaa() throws BadHanyuPinyinOutputFormatCombination {
         JiebaSegmenter segmenter = new JiebaSegmenter();
-        String text = "优碧胜 1+5=7 2020-04-05 123456 java Hello  imooc 测试";
+//        String text = "优碧胜 1+5=7 2020-04-05 123456 java Hello  imooc 测试";
 //        String text = "这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和Cpp。";
-
+        String text = "迎着朝阳,我想着北京朝阳区的方向走去";
         // 1、去除string 中的标点符号 []中添加需要处理的标点符号
         text = text.replaceAll( "[\\~$`^|<>～｀＄＾｜＜＞￥×。，,]" , "");
         System.out.println("text去除标点符号之后的结果:"+text);

@@ -48,11 +48,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // MainActivity.this 是上下文
-        ZhProcessor zhProcessor = new ZhProcessor(MainActivity.this);
-        String text = "这是一个伸手不见五指的黑夜。我叫孙悟空，我爱北京，我爱Python和C++。";
-        text = zhProcessor.removeCommasFromNumbers(text);
-        System.out.println("text去除标点符号结果:"+text);
-        Log.d("ccs",text); // 选择打印的内容
+//        ZhProcessor zhProcessor = new ZhProcessor(MainActivity.this);
+//        String text = "1123€";
+//        text = zhProcessor.removeCommasFromNumbers(text);
+//        System.out.println("text去除标点符号结果:"+text);
+//        text = zhProcessor.expandPounds(text);
+//        System.out.println("text去除标点符号结果:"+text);
+//        text = expandRmb(text);
+//        text = expandDollars(text);
+//        text = expandDecimals(text);
+//        text = expandDate(text);
+//        text = expandCardinals(text);
+//        Log.d("ccs",text); // 选择打印的内容
 
 
         EditText input = findViewById(R.id.input);
